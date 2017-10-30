@@ -1,5 +1,5 @@
 n <- 10^4
-select <- n * 0.49
+select <- n * 0.2
 ind <- rbinom(n, 1, .00001)
 mu <- ind * rnorm(n, sd = 0.05) + (1 - ind) * rnorm(n, sd = 1)
 #mu <- rexp(n, 0.5) * (1 - 2 * ind)
@@ -18,6 +18,7 @@ lower <- osamp[lowerSet]
 lthreshold <- max(lower) * select / (select + 1)
 zsamp <- c(upper, lower)
 mu <- c(umu, lmu)
+threshold <- c(lthreshold, uthreshold)
 
 fit <- optimExpFamily(zsamp, threshold, degree = J,
                       stepCoef = 0.15, stepRate = 0.01,

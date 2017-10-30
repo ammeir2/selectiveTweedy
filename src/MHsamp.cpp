@@ -137,7 +137,7 @@ NumericVector mhSampler(double init, NumericVector beta,
       sample[sampNum++] = samp[0] ;
       if(sampNum == nsamp) break ;
     }
-    Rcpp::Rcout<<samp<<"\n" ;
+    // Rcpp::Rcout<<samp<<"\n" ;
     iteration++ ;
   }
 

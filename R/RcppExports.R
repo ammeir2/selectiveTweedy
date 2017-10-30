@@ -2,14 +2,14 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 computeFz <- function(z, beta, log) {
-    .Call('selectiveTweedy_computeFz', PACKAGE = 'selectiveTweedy', z, beta, log)
+    .Call('_selectiveTweedy_computeFz', PACKAGE = 'selectiveTweedy', z, beta, log)
 }
 
 rejectSampCpp <- function(maxsamp, maxtries, lthreshold, uthreshold, M, theta, beta) {
-    .Call('selectiveTweedy_rejectSampCpp', PACKAGE = 'selectiveTweedy', maxsamp, maxtries, lthreshold, uthreshold, M, theta, beta)
+    .Call('_selectiveTweedy_rejectSampCpp', PACKAGE = 'selectiveTweedy', maxsamp, maxtries, lthreshold, uthreshold, M, theta, beta)
 }
 
 mhSampler <- function(init, beta, lthreshold, uthreshold, sampsd, burnin, trim, nsamp, tries) {
-    .Call('selectiveTweedy_mhSampler', PACKAGE = 'selectiveTweedy', init, beta, lthreshold, uthreshold, sampsd, burnin, trim, nsamp, tries)
+    .Call('_selectiveTweedy_mhSampler', PACKAGE = 'selectiveTweedy', init, beta, lthreshold, uthreshold, sampsd, burnin, trim, nsamp, tries)
 }
 

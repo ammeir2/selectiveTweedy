@@ -8,7 +8,7 @@ using namespace Rcpp;
 
 // computeFz
 NumericVector computeFz(NumericVector z, NumericVector beta, bool log);
-RcppExport SEXP selectiveTweedy_computeFz(SEXP zSEXP, SEXP betaSEXP, SEXP logSEXP) {
+RcppExport SEXP _selectiveTweedy_computeFz(SEXP zSEXP, SEXP betaSEXP, SEXP logSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -21,7 +21,7 @@ END_RCPP
 }
 // rejectSampCpp
 NumericVector rejectSampCpp(int maxsamp, int maxtries, double lthreshold, double uthreshold, NumericVector M, NumericVector theta, NumericVector beta);
-RcppExport SEXP selectiveTweedy_rejectSampCpp(SEXP maxsampSEXP, SEXP maxtriesSEXP, SEXP lthresholdSEXP, SEXP uthresholdSEXP, SEXP MSEXP, SEXP thetaSEXP, SEXP betaSEXP) {
+RcppExport SEXP _selectiveTweedy_rejectSampCpp(SEXP maxsampSEXP, SEXP maxtriesSEXP, SEXP lthresholdSEXP, SEXP uthresholdSEXP, SEXP MSEXP, SEXP thetaSEXP, SEXP betaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -38,7 +38,7 @@ END_RCPP
 }
 // mhSampler
 NumericVector mhSampler(double init, NumericVector beta, double lthreshold, double uthreshold, double sampsd, int burnin, int trim, int nsamp, NumericVector tries);
-RcppExport SEXP selectiveTweedy_mhSampler(SEXP initSEXP, SEXP betaSEXP, SEXP lthresholdSEXP, SEXP uthresholdSEXP, SEXP sampsdSEXP, SEXP burninSEXP, SEXP trimSEXP, SEXP nsampSEXP, SEXP triesSEXP) {
+RcppExport SEXP _selectiveTweedy_mhSampler(SEXP initSEXP, SEXP betaSEXP, SEXP lthresholdSEXP, SEXP uthresholdSEXP, SEXP sampsdSEXP, SEXP burninSEXP, SEXP trimSEXP, SEXP nsampSEXP, SEXP triesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -54,4 +54,16 @@ BEGIN_RCPP
     rcpp_result_gen = Rcpp::wrap(mhSampler(init, beta, lthreshold, uthreshold, sampsd, burnin, trim, nsamp, tries));
     return rcpp_result_gen;
 END_RCPP
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_selectiveTweedy_computeFz", (DL_FUNC) &_selectiveTweedy_computeFz, 3},
+    {"_selectiveTweedy_rejectSampCpp", (DL_FUNC) &_selectiveTweedy_rejectSampCpp, 7},
+    {"_selectiveTweedy_mhSampler", (DL_FUNC) &_selectiveTweedy_mhSampler, 9},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_selectiveTweedy(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }
