@@ -36,36 +36,40 @@ threshold <- c(-1.96, 1.96)
 
 # Estimating -----------------
 # conditional prior
-gmmfit <- truncDeconvolution(samp, threshold, method = "GMM", df = 4,
+gmmfit <- truncDeconvolution(samp, threshold, method = "GMM", df = 1,
                              iterations = 100, delay = 30, save_densities = FALSE,
-                             progress_bar = TRUE)
+                             progressBar = TRUE, arbvar = FALSE)
 plot(sort(samp), sort(gmmfit$estimates), type = "l", ylim = c(-3, 9), lwd = 2, lty = 2)
 abline(a = 0, b = 1)
 expfit <- truncDeconvolution(samp, threshold, method = "exp-family", df = 4,
                              iterations = 100, delay = 30, save_densities = FALSE,
                              progress_bar = TRUE)
 lines(sort(samp), sort(expfit$estimates), col = "red", lwd = 2, lty = 2)
-splinefit <- truncDeconvolution(samp, threshold, method = "exp-splines", df = 4,
+splinefit <- truncDeconvolution(samp, threshold, method = "exp-splines", df = 8,
                                 iterations = 100, delay = 30, save_densities = FALSE,
                                 progress_bar = TRUE)
 lines(sort(samp), sort(splinefit$estimates), col = "blue", lwd = 2, lty = 2)
 legend("topleft", col = c("black", "red", "blue"),
        legend = c("GMM", "Polynomial", "Splines"), lty = 1)
 points(samp, thetas)
+mean(gmmfit$estimates - thetas, na.rm = TRUE)
+mean(expfit$estimates - thetas, na.rm = TRUE)
+mean(splinefit$estimates - thetas, na.rm = TRUE)
+
 
 # Full prior
-gmmfit <- truncDeconvolution(samp, threshold, method = "GMM", df = 4,
+gmmfit <- truncDeconvolution(samp, threshold, method = "GMM", df = 1,
                              full_prior = TRUE,
                              iterations = 100, delay = 30, save_densities = FALSE,
-                             progress_bar = TRUE)
+                             progressBar = TRUE, arbvar = TRUE)
 plot(sort(samp), sort(gmmfit$estimates), type = "l", ylim = c(-3, 9), lwd = 2, lty = 2)
 abline(a = 0, b = 1)
-expfit <- truncDeconvolution(samp, threshold, method = "exp-family", df = 2,
+expfit <- truncDeconvolution(samp, threshold, method = "exp-family", df = 4,
                              full_prior = TRUE,
                              iterations = 100, delay = 30, save_densities = FALSE,
                              progress_bar = TRUE)
 lines(sort(samp), sort(expfit$estimates), col = "red", lwd = 2, lty = 2)
-splinefit <- truncDeconvolution(samp, threshold, method = "exp-splines", df = 4,
+splinefit <- truncDeconvolution(samp, threshold, method = "exp-splines", df = 8,
                                 full_prior = TRUE,
                                 iterations = 100, delay = 30, save_densities = FALSE,
                                 progress_bar = TRUE)
@@ -73,12 +77,14 @@ lines(sort(samp), sort(splinefit$estimates), col = "blue", lwd = 2, lty = 2)
 legend("topleft", col = c("black", "red", "blue"),
        legend = c("GMM", "Polynomial", "Splines"), lty = 1)
 points(samp, thetas)
-
+mean(gmmfit$estimates - thetas, na.rm = TRUE)
+mean(expfit$estimates - thetas, na.rm = TRUE)
+mean(splinefit$estimates - thetas, na.rm = TRUE)
 
 # Evaluating estimation ------------
 estimates <- gmmfit$estimates
-estimates <- expfit$estimates
-estimates <- splinefit$estimates
+# estimates <- expfit$estimates
+# estimates <- splinefit$estimates
 
 plot(sort(samp), sort(estimates), ylim = c(-2, 7), type = "l",
      col = "blue", lwd = 2, lty = 2)

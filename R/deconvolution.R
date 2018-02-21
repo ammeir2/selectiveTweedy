@@ -1,6 +1,30 @@
 # Helper functions -----------------
-computeGmmDens <- function(thetas, df, ...) {
+computeGmmDens <- function(thetas, df, symmetric = TRUE, ...) {
+  if(df == 1) {
+    if(symmetric) {
+      sd <- sqrt(mean(thetas^2))
+      mu <- 0
+    } else {
+      mu <- mean(thetas)
+      sd <- sqrt(mean((thetas - mu)^2))
+    }
+    fit <- list()
+    fit$mu <- mu
+    fit$sigma <- sd
+    fit$lambda <- 1
+    return(fit)
+  }
+
+  # If df > 1
+  if(symmetric) {
+    thetas <- c(-abs(thetas), thetas)
+  }
   fit <- normalmixEM(x = thetas, k = df, ...)
+  if(symmetric) {
+    fit$sigma <- rep(fit$sigma, 2)
+    fit$lambda <- rep(fit$lambda, 2) / 2
+    fit$mu <- c(-abs(fit$mu), abs(fit$mu))
+  }
   return(fit)
 }
 computeSplineDens <- function(thetas, support, df, symmetric = TRUE) {
@@ -25,7 +49,8 @@ computeSplineDens <- function(thetas, support, df, symmetric = TRUE) {
   dens <- dens / sum(dens)
   return(dens)
 }
-computePolyCoefs <- function(thetas, coefs,  support) {
+computePolyCoefs <- function(thetas, coefs,  support, symmetric = TRUE) {
+  thetas <- c(-abs(thetas), abs(thetas))
   coefs <- optim(coefs, fn = optimFuncPoly, gr = optimGradPoly, method = "BFGS",
                  support = support, thetas = thetas)$par
   return(coefs)
@@ -55,9 +80,25 @@ sampGMM <- function(nsamp, fit) {
   samp <- rnorm(nsamp, mean = mu[k], sd = sigma[k])
   return(samp)
 }
+gmmdens <- function(thetas, fit) {
+  k <- length(fit$mu)
+  dens <- matrix(nrow = length(thetas), ncol = k)
+  for(i in 1:k) {
+    dens[, i] <- fit$lambda[k] * dnorm(thetas, mean = fit$mu[i], sd = fit$sigma[i])
+  }
+  dens <- rowSums(dens)
+  return(log(dens))
+}
 sampFromDensGMM <- function(z, fit, nsamp, threshold) {
+  # fit$sigma <- fit$sigma * 2
   thetas <- sort(sampGMM(nsamp, fit))
-  dens <- dtrunc(z, thetas, threshold)
+  # impdens <- gmmdens(thetas, fit)
+
+  # fit$sigma <- fit$sigma / 2
+  # gdens <- gmmdens(thetas, fit)
+  # impweights <- exp(gdens - impdens)
+
+  dens <- dtrunc(z, thetas, threshold)# * impweights
   dens <- dens / sum(dens)
   cdf <- cumsum(dens)
   samp <- thetas[min(which(runif(1) < cdf))]
@@ -157,9 +198,10 @@ optimGradPoly <- function(coefs, support, thetas) {
 
 truncDeconvolution <- function(samp, threshold,
                                method = c("GMM", "exp-family", "exp-splines"),
-                               df = 2, support = NULL,
+                               df = 3, support = NULL, symmetric = TRUE,
                                iterations = 100,
                                delay = 20,
+                               npost = 1,
                                full_prior = FALSE,
                                save_densities = FALSE,
                                progressBar = TRUE, ...) {
@@ -206,38 +248,39 @@ truncDeconvolution <- function(samp, threshold,
   for(i in 1:iterations) {
     # Estimating Density of Prior ----------------
     if(method == "GMM") {
-      try(invisible(capture.output(thetadens <- computeGmmDens(thetasamp, df, arbvar = FALSE))))
+      try(invisible(capture.output(thetadens <- computeGmmDens(thetasamp, df, symmetric = symmetric, ...))))
     } else if(method == "exp-splines") {
-      thetadens <- computeSplineDens(thetas, support, df, symmetric = FALSE)
+      thetadens <- computeSplineDens(thetas, support, df, symmetric = symmetric)
     } else if(method == "exp-family") {
-      coefs <- computePolyCoefs(thetas, coefs,  support)
+      coefs <- computePolyCoefs(thetas, coefs,  support, symmetric = symmetric)
       thetadens <- computePolyDens(coefs, support)
     }
 
     # Sampling from Conditional Distribution ---------------
     if(!full_prior) {
       if(method == "GMM") {
-        current <- sapply(samp, sampFromDensGMM, thetadens, 10^3, threshold)
+        current <- sapply(rep(samp, npost), sampFromDensGMM, thetadens, 10^3, threshold)
       } else {
-        current <- sapply(samp, sampFromDens, support, thetadens, threshold)
+        current <- sapply(rep(samp, npost), sampFromDens, support, thetadens, threshold)
       }
       thetasamp <- current
     } else {
       if(method == "GMM") {
-        current <- sapply(samp, sampFromDensGMM, thetadens, 10^3, threshold = c(0, 0))
+        current <- sapply(rep(samp, npost), sampFromDensGMM, thetadens, 10^3, threshold = c(0, 0))
       } else {
-        current <- sapply(samp, sampFromDens, support, thetadens, threshold = c(0, 0))
+        current <- sapply(rep(samp, npost), sampFromDens, support, thetadens, threshold = c(0, 0))
       }
-      censored <- sampToSelections(length(samp), thetadens, threshold, support, method = method)
+      censored <- sampToSelections(length(samp) * npost, thetadens, threshold, support, method = method)
       thetasamp <- c(censored, current)
     }
 
     # Aggregating Results ------------
     if(i >= delay) {
       w <- 1 / max(i - delay, 1)
-      estimates <- (1 - w) * estimates + current * w
+      currentEst <- colMeans(do.call("rbind", split(current, f = sapply(1:npost, function(x) rep(x, length(samp))))))
+      estimates <- (1 - w) * estimates + currentEst * w
       if(full_prior) {
-        misProp <- (1 - w) * misProp + length(censored) / (length(samp) + length(censored)) * w
+        misProp <- (1 - w) * misProp + length(censored) / (length(samp) * npost + length(censored)) * w
       }
     }
 
@@ -246,6 +289,9 @@ truncDeconvolution <- function(samp, threshold,
       priorDensities[[i - delay]] <- thetadens
     }
     if(progressBar) pb$tick()
+    # print(c(i, thetadens$mu))
+    # print(thetadens$sigma)
+    # print(thetadens$lambda)
   }
 
   # Returning results --------------

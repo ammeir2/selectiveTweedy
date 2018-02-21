@@ -1,3 +1,5 @@
 exportPattern("^[[:alpha:]]+")
 importFrom(Rcpp, sourceCpp)
 useDynLib(selectiveTweedy)
+import(mixtools)
+import(progress)

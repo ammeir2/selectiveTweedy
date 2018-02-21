@@ -127,7 +127,7 @@ repZ <- qnorm(1 - pmax(RPPdata$T.pval.recalc.R, 10^-15) / 2) * (1 - 2 * (RPPdata
 
 results <- list()
 slot <- 1
-for(k in c(5, 10, 15, 20, 25, 30)) {
+for(k in c(9)) {
   if(k == 3) {
     meanc <- c("0a", "-a", "a")
   } else if(k == 5) {
@@ -157,8 +157,8 @@ for(k in c(5, 10, 15, 20, 25, 30)) {
                         upper = qnorm(.975),
                         verbose = TRUE,
                         lbound = 0,
-                        # sd.constr = rep(1, k),
-                        mean.constr = rep(0, k),
+                        sd.constr = rep(1.5, k),
+                        mean.constr = meanc,
                         arbvar = TRUE,
                         ECM = TRUE)
   results[[slot]] <- fit
@@ -204,6 +204,9 @@ adjusted[adjusted < -10] <- 0
 replication <- (abs(repZ) * opposite * sizeRatio)[-whichNA]
 naive <- originalZ[1:s]
 plot(naive, replication)
+abline(v = 0, h = 0)
+abline(a = 0, b = 1, col = "grey")
+plot(adjusted, replication)
 abline(v = 0, h = 0)
 abline(a = 0, b = 1, col = "grey")
 points(sort(naive), adjusted[order(naive)], col = "blue", type = "l", lwd = 2)
