@@ -1,4 +1,4 @@
-library('deconvolveR')
+library('selectiveTweedy')
 
 set.seed(500)
 set.seed(7329)
