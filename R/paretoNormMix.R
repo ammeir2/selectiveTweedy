@@ -27,12 +27,15 @@ normParetoMixEM <- function(x, threshold, barrier = 0.005, emIterations = 100, t
     probs[2] <- 1 - probs[1]
   }
 
-  return(list(x = x,
-              normfit = normfit, paretofit = paretofit,
-              probs = probs,
-              posteriors = cbind(normWeights, paretoWeights),
-              threshold = threshold,
-              loglik = loglik, iterations = iterations))
+  result <- list(x = x,
+                 normfit = normfit, paretofit = paretofit,
+                 probs = probs,
+                 posteriors = cbind(normWeights, paretoWeights),
+                 threshold = threshold,
+                 loglik = loglik, iterations = iterations)
+  class(result) <- "normParetoTweed"
+
+  return(result)
 }
 
 normParetoMixDens <- function(x, mixfit) {
@@ -47,3 +50,16 @@ normParetoTweedy <- function(mixfit) {
   paretoTweed <- paretoTweed * mixfit$posteriors[, 2]
   return(normTweed + paretoTweed)
 }
+
+#' Computes the tweedy estimate for selected quantities based on a fitted normal-pareto mixture model
+#'
+#' @export
+predict.normParetoTweed <- function(object, ...) {
+  normParetoTweedy(object)
+}
+
+
+
+
+
+

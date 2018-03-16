@@ -76,7 +76,6 @@ paretoTweedy <- function(x, location, scale, shape) {
   return(adjust)
 }
 
-
 #' Tweedy correction for tails of distributions based on the generalized pareto distribution
 #'
 #' @export
@@ -88,13 +87,27 @@ paretoTweedyCorrection <- function(x, threshold, weights = NULL, barrier = 0.005
   correction <- paretoTweedy(x, threshold, mlfit$par[1], mlfit$par[2])
 
   result <- list(x = x,
+                 threshold = threshold,
                  estimate = correction,
                  mlfit = mlfit)
 
+  class(result) <- "paretoTweed"
   return(result)
 }
 
+#' Compute tweedy correction based on estimated Generalized Pareto Marginal Distribution
+#'
+#' @export
+predict.paretoTweed <- function(object, newX = NULL, ...) {
+  if(is.null(newX)) {
+    return(object$estimaet)
+  } else {
+    return(paretoTweedy(newX, object$threshold, object$mlfit$par[1], object$mlfit$par[2]))
+  }
+}
 
+
+#' Log-likelihood of the (two sided) truncated normal distribution
 truncLogNormDens <- function(mu, x, sd, threshold) {
   dens <- dnorm(x, mu, sd, log = TRUE)
   prob <- pnorm(-threshold, mu, sd) + pnorm(threshold, mu, sd, lower.tail = FALSE)

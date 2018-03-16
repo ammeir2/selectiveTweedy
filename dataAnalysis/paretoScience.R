@@ -52,35 +52,46 @@ whichNA <- which(is.na(originalZ) | originalZ < threshold | is.na(repZ))
 originalZ <- originalZ[-whichNA]
 repZ <- repZ[-whichNA]
 
+paretofit <- paretoTweedyCorrection(originalZ, threshold)
 mixfit <- normParetoMixEM(originalZ, threshold, emIterations = 500, barrier = 0)
 conditional <- sapply(originalZ, truncNormMLE, threshold = threshold, sd = 1)
 npTweed <- normParetoTweedy(mixfit)
+bw_adj <- 1
+deriv <- (bw_adj * hns(originalZ, deriv.order=1)) %>% kdde(x, h = ., deriv.order=1)
+dens <- (bw_adj * hns(originalZ)) %>% kdde(x, h = .)
+nonparamAdj <- pmin(predict(deriv, x = originalZ) /predict(dens, x = originalZ), 0)
+sorted <- sort(originalZ)
+sortAdj <- sorted + sort(nonparamAdj)
+nonparamTweed <- sortAdj[match(originalZ, sorted)] %>% pmax(0)
 
 par(mfrow = c(2, 2), mar = rep(4, 4))
 plot(density(originalZ), main = "Original Study + Estimated Pareto Density")
-lines(sort(originalZ), paretoDens(sort(originalZ), threshold, fit$mlfit$par[1], fit$mlfit$par[2], FALSE),
+lines(sort(originalZ), paretoDens(sort(originalZ), threshold, paretoParam[1], paretoParam[2], FALSE),
       col = "red")
 lines(sort(originalZ), normParetoMixDens(sort(originalZ), mixfit), col = "green")
 legend("topright", col = c("black", "red", "green"), legend = c("observed", "pareto-ML", "npmix"), lty = 1)
 
 plot(originalZ, repZ, main = "Observed + Estimators")
-lines(sort(originalZ), fit$estimate[order(originalZ)], col = 'red', lwd = 2)
+lines(sort(originalZ), paretofit$estimate[order(originalZ)], col = 'red', lwd = 2)
 lines(sort(originalZ), conditional[order(originalZ)], col = 'blue', lwd = 2)
 lines(sort(originalZ), npTweed[order(originalZ)], col = 'green', lwd = 2)
+lines(sort(originalZ), nonparamTweed[order(originalZ)], col = 'orange', lwd = 2)
 abline(a = 0, b = 1, lty = 2, lwd = 2)
-legend("bottomright", lty = 1, col = c("red", "blue", "green"), legend = c("tweedy", "cond", "npmix"))
+legend("bottomright", lty = 1, col = c("red", "blue", "green", "orange"), legend = c("tweedy", "cond", "npmix", "nonparam"))
 
 plot(density(repZ), main = "Density of Replication + Adjusted Estimates", ylim = c(0, 0.4))
-lines(density(fit$estimate), col = "red")
+lines(density(paretofit$estimate), col = "red")
 lines(density(conditional), col = "blue")
 lines(density(npTweed), col = "green")
 legend("topright", col = c("black", "red", "blue", "green"), legend = c("rep", "tweed", "cond", "npmix"), lty = 1)
 mean(originalZ - repZ)
-mean(fit$estimate - repZ)
+mean(paretofit$estimate - repZ)
 mean(conditional - repZ)
 mean(npTweed - repZ)
+mean(nonparamTweed - repZ)
 
-median(fit$estimate - repZ)
+median(paretofit$estimate - repZ)
 median(conditional - repZ)
 median(npTweed - repZ)
+
 

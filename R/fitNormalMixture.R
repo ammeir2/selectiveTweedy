@@ -1,3 +1,4 @@
+#' @import progress
 fitNormalMixture <- function(x, k = 2, iter = 10, init = NULL) {
   if(is.null(init)) {
     kmFit <- kmeans(x, k)
