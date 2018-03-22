@@ -59,7 +59,7 @@ conditional <- sapply(originalZ, truncNormMLE, threshold = threshold, sd = 1)
 truncDeconvFit <- truncDeconv(originalZ, threshold = qnorm(.975),
                               meanValues = NULL,
                               twoSided = FALSE,
-                              splineDegree = 4,
+                              splineDegree = 3,
                               binWidth = 0.1)
 empBayes <- predict(truncDeconvFit)$bayes
 ptnFit <- paretoTruncNormMix(originalZ, threshold = qnorm(.975), normComps = 3, paretoComp = FALSE)
@@ -71,6 +71,10 @@ lines(density(originalZ), col = "black")
 lines(density(tweedy), col = "red")
 lines(density(conditional), col = "orange")
 lines(density(empBayes), col = "green")
+legend("topright", lty = 1,
+       col = c("black", "blue", "red", "orange", "green"),
+       legend = c("original", "replication", "F Model", "Conditional", "G Model"))
+
 
 plot(originalZ, repZ, main = "Observed + Estimators")
 lines(sort(originalZ), predict(ptnFit)[order(originalZ)], col = 'red', lwd = 2)

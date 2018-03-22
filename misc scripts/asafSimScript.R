@@ -32,7 +32,7 @@ abline(v = threshold, col = "black")
 x <- data$z[data$selected]
 splineDegree <- 10
 truncDeconvFit <- truncDeconv(x, threshold = threshold,
-                              meanValues = tau,
+                              meanValues = NULL,
                               twoSided = FALSE,
                               splineDegree = splineDegree,
                               binWidth = 0.1)
@@ -41,18 +41,18 @@ points(x, empBayesEst, col='blue',cex=.25)
 
 
 # eb from entire data (by deconvolution; could compare to Tweedie as well)
+tau <- truncDeconvFit$stats[, "theta"]
 allBayes <- deconv(tau, X = data$z, family = "Normal", pDegree = splineDegree)
 allBayesEst <- deconvTweed(x, allBayes)
 points(data$z[data$selected], allBayesEst, col='forestgreen', cex=.25)
 legend('topleft',legend = c('estimate from truncated data', 'estimate from entire data', 'F-Model'),pch=c(1,1,1), pt.cex = .25,col=c('blue','forestgreen','burlywood3'),bty="n")
-
 
 #selective MLE
 abline(h=0,col='black')
 abline(v=2,col='black')
 # abline(v=dnorm(2)/(1-pnorm(2)),col='black')
 
-# Amit's Fit
+# F-modeling
 ptnFit <- paretoTruncNormMix(data$z[data$selected], threshold = 2, normComps = 3, paretoComp = FALSE)
 points(data$z[data$selected], predict(ptnFit), cex = .25, col = "orange")
 
@@ -62,20 +62,10 @@ mean((predict(ptnFit) - data$mu[data$selected])^2) # naive
 mean((allBayesEst-data$mu[data$selected])^2,na.rm = TRUE) # for est based on entire data
 mean((data$z[data$selected] - data$mu[data$selected])^2) # naive
 
-
 # bias
 mean((data$z[data$selected] - data$mu[data$selected]))
 mean((empBayesEst - data$mu[data$selected]), na.rm = TRUE)
 mean((predict(ptnFit) - data$mu[data$selected]))
 mean((allBayesEst - data$mu[data$selected]), na.rm = TRUE)
-hist(predict(ptnFit) - data$mu[data$selected])
-abline(v = 0)
 
-
-# histogram of error
-par(mfrow=c(1,2))
-hist(est-data$mu[data$selected],main = 'Truncated data',xlab = 'estimateion error')
-abline(v=mean(est-data$mu[data$selected],na.rm = TRUE),col='red')
-hist(est.all[data$selected]-data$mu[data$selected], main = 'All data', xlab = 'estimateion error')
-abline(v = mean(est.all[data$selected]-data$mu[data$selected], na.rm = TRUE), col='red')
 

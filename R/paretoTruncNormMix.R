@@ -33,10 +33,30 @@ mixDens <- function(x, threshold, normFit, paretoFit, probs) {
   return(normDens + paretoDens)
 }
 
+#' A function for fitting a Genearlized Pareto/Truncated Normal mixture to a data
+#'
+#' The aim of this function is to estimate the marginal distribution of a normal, convolved
+#' with an unknown prior and then truncated. The model fit can be used to compute the
+#' Empirical Bayes rule using Tweedy's Formula.
+#'
+#' @param x the observed (truncated) z-scores
+#'
+#' @param threshold the threshold used for screening, the selection rule is abs(x) > abs(threshold)
+#'
+#' @param normComps number of truncated normal components to fit
+#'
+#' @param iterations number of EM iterations
+#'
+#' @param paretoComp whether to include a Generalzed Pareto mixture component
+#'
+#' @param verbose whether to print a progress bar
+#'
+#' @seealso \code{\link{predict.ptnMix}}
+#'
 #' @importFrom mixtools normalmixEM
 #' @import magrittr
 #' @export
-paretoTruncNormMix <- function(x, threshold, normComps = 1, iterations = 100, paretoComp = TRUE,
+paretoTruncNormMix <- function(x, threshold, normComps = 1, iterations = 100, paretoComp = FALSE,
                                verbose = TRUE) {
   # Fitting mixture of truncated normal and pareto
   paretoFit <- paretoML(x, location = threshold, barrier = 0.005)
@@ -90,13 +110,21 @@ paretoTruncNormMix <- function(x, threshold, normComps = 1, iterations = 100, pa
   return(result)
 }
 
-#' Applies Tweedy Correction
+#' Applies Tweedy Correction based on a Pareto/Truncated Normal Mixture
+#'
+#' Computes the Tweedy correction for a truncated sample based on a
+#' \code{\link{paretoTruncNormMix}} model fit.
+#'
+#' @param object an object of class \code{ptnMix}, obtained from fitting a
+#' \code{\link{paretoTruncNormMix}} model
+#'
 #' @export
 predict.ptnMix <- function(object, ...) {
   # browser()
   x <- object$x
   threshold <- object$threshold
   paretoFit <- object$paretoFit
+  normFit <- object$normFit
   mu <- normFit[1, ]
   sd <- normFit[2, ]
   posteriors <- object$posteriors

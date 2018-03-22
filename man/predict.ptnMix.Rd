@@ -2,10 +2,15 @@
 % Please edit documentation in R/paretoTruncNormMix.R
 \name{predict.ptnMix}
 \alias{predict.ptnMix}
-\title{Applies Tweedy Correction}
+\title{Applies Tweedy Correction based on a Pareto/Truncated Normal Mixture}
 \usage{
 \method{predict}{ptnMix}(object, ...)
 }
+\arguments{
+\item{object}{an object of class \code{ptnMix}, obtained from fitting a
+\code{\link{paretoTruncNormMix}} model}
+}
 \description{
-Applies Tweedy Correction
+Computes the Tweedy correction for a truncated sample based on a
+\code{\link{paretoTruncNormMix}} model fit.
 }
