@@ -1,6 +1,7 @@
 library(ggplot2)
 library(selectiveTweedy)
 
+# Model 2 --------------
 set.seed(1)
 # Data according to censoring model
 muSD <- 1

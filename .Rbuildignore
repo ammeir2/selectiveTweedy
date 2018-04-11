@@ -1,4 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 figures/*
-simulations/results/*
+simulations/*
+dataAnalysis/*
+misc scripts/*
+writeups/*

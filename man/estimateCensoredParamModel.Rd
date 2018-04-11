@@ -9,9 +9,12 @@ estimateCensoredParamModel(x, threshold)
 \arguments{
 \item{x}{the observed data z-scores}
 
-\item{threshold}{the selection threshold for the selection rule abs(x) > threshold}
+\item{threshold}{the selection threshold for the selection rule
+\code{x < threshold[1]} or \code{x > threshold[2]}. If a scalar is provided,
+then threshold is set to \code{c(-abs(threshold), abs(threshold))}.}
 }
 \description{
-Parametric model 2 assumes that mu ~ N(0, b) and x ~ N(mu, 1), where x is discarded
-if abs(x) < threshold.
+Parametric model 2 assumes that mu ~ N(0, b) and x ~ N(mu, 1),
+where x is discarded
+if \code{x > threshold[1]} and \code{x < threshold[2]}
 }

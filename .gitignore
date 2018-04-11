@@ -7,4 +7,5 @@ src/*.so
 src/*.dll
 figures/*
 simulations/results/*
+simulations/parametricSim/results/*
 writeups/*

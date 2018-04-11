@@ -9,7 +9,9 @@ univTruncNormMLE(x, threshold, xsd = 1)
 \arguments{
 \item{x}{the observed truncated normal samples}
 
-\item{threshold}{the threshold for the selection rule abs(x) > threshold}
+\item{threshold}{the selection threshold for the selection rule
+\code{x < threshold[1]} or \code{x > threshold[2]}. If a scalar is provided,
+then threshold is set to \code{c(-abs(threshold), abs(threshold))}.}
 
 \item{xsd}{the standard deviation of the normal observations}
 }
